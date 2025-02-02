@@ -81,24 +81,22 @@ fn build_ui() -> impl Widget<AppState> {
 }
 
 fn filtered_tasks_lens() -> impl Lens<AppState, Arc<Vec<Task>>> {
-    AppState::show_completed.then(
-        AppState::tasks.map(
-            |show: &bool, tasks: &Arc<Vec<Task>>| {
-                if *show {
-                    tasks.clone()
-                } else {
-                    Arc::new(tasks.iter()
-                        .filter(|task| !task.done)
-                        .cloned()
-                        .collect())
-                }
-            },
-            |show: &mut bool, tasks: &mut Arc<Vec<Task>>, filtered| {
-                if *show {
-                    *tasks = filtered;
-                }
+    druid::lens::Map::new(
+        |data: &AppState| {
+            if data.show_completed {
+                data.tasks.clone()
+            } else {
+                Arc::new(data.tasks.iter()
+                    .filter(|task| !task.done)
+                    .cloned()
+                    .collect())
             }
-        )
+        },
+        |data: &mut AppState, filtered: Arc<Vec<Task>>| {
+            if data.show_completed {
+                data.tasks = filtered;
+            }
+        }
     )
 }
 
