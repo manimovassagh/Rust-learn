@@ -52,7 +52,7 @@ fn build_ui() -> impl Widget<AppState> {
             .with_child(Checkbox::new("").lens(Task::done))
             .with_child(Label::dynamic(|task: &Task, _env: &Env| {
                 format!("{}", task.description)
-            }))
+            }).with_text_color(Color::BLACK)) // Set text color to black
             .padding(5.0)
     }).lens(filtered_tasks_lens()))
     .vertical()
@@ -62,7 +62,7 @@ fn build_ui() -> impl Widget<AppState> {
         .on_click(|_ctx: &mut EventCtx, data: &mut AppState, _env: &Env| {
             add_task(data);
         })
-        .background(Painter::new(|ctx, _, env| {
+        .background(Painter::new(|ctx, _, _| {
             let bounds = ctx.size().to_rect();
             ctx.fill(bounds, &Color::rgb8(0x00, 0x7A, 0xCC));
         }))
@@ -71,8 +71,9 @@ fn build_ui() -> impl Widget<AppState> {
         .padding(10.0)
         .expand_width();
 
-    let show_completed_checkbox = Checkbox::new("Show completed tasks")
-        .lens(AppState::show_completed);
+    let show_completed_checkbox = Flex::row()
+        .with_child(Checkbox::new("").lens(AppState::show_completed))
+        .with_child(Label::new("Show completed tasks").with_text_color(Color::BLACK));
 
     Flex::column()
         .with_child(description_input)
@@ -83,7 +84,7 @@ fn build_ui() -> impl Widget<AppState> {
         .with_spacer(10.0)
         .with_flex_child(task_list, 1.0)
         .padding(10.0)
-        .background(Color::rgb8(0xF0, 0xF0, 0xF0))
+        .background(Color::rgb8(0xE0, 0xE0, 0xE0)) // Adjusted background color for better readability
 }
 
 fn add_task(data: &mut AppState) {
