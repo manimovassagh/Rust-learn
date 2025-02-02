@@ -1,5 +1,5 @@
 use druid::{
-    AppLauncher, Data, Env, EventCtx, Lens, LocalizedString, Widget, WidgetExt, WindowDesc
+    AppLauncher, Data, Env, EventCtx, Lens, LensExt, LocalizedString, Widget, WidgetExt, WindowDesc
 };
 use druid::widget::{Button, Checkbox, Flex, Label, List, TextBox};
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ fn build_ui() -> impl Widget<AppState> {
                 format!("{}", task.description)
             }))
             .padding(5.0)
-    }).lens(AppState::tasks.then(filtered_tasks_lens()));
+    }).lens(filtered_tasks_lens());
 
     let add_task_button = Button::new("Add Task")
         .on_click(|_ctx: &mut EventCtx, data: &mut AppState, _env: &Env| {
@@ -80,9 +80,9 @@ fn build_ui() -> impl Widget<AppState> {
         .with_child(task_list)
 }
 
-fn filtered_tasks_lens() -> impl Lens<Arc<Vec<Task>>, Arc<Vec<Task>>> {
+fn filtered_tasks_lens() -> impl Lens<AppState, Arc<Vec<Task>>> {
     AppState::show_completed.then(
-        druid::lens::Identity.map(
+        AppState::tasks.map(
             |show: &bool, tasks: &Arc<Vec<Task>>| {
                 if *show {
                     tasks.clone()
@@ -112,10 +112,8 @@ fn load_tasks() -> Result<Arc<Vec<Task>>, Box<dyn Error>> {
     }
 }
 
-
 fn save_tasks(tasks: &Arc<Vec<Task>>) -> Result<(), Box<dyn Error>> {
     let file = File::create("tasks.json")?;
-    
     serde_json::to_writer(file, tasks.as_ref())?;
     Ok(())
 }
