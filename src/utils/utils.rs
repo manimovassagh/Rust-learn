@@ -4,12 +4,10 @@ use std::sync::Arc;
 use std::fs::File;
 use rand::random;
 use std::error::Error;
-use std::io::{self, Write};
-use serde_json::Error as SerdeError;
 
 pub fn add_task(data: &mut AppState) {
     let description = data.new_task_description.trim();
-    if (!description.is_empty()) {
+    if !description.is_empty() {
         let mut new_tasks = Vec::clone(&data.tasks);
         new_tasks.push(Task {
             id: random(),
