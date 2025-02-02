@@ -112,8 +112,10 @@ fn load_tasks() -> Result<Arc<Vec<Task>>, Box<dyn Error>> {
     }
 }
 
+
 fn save_tasks(tasks: &Arc<Vec<Task>>) -> Result<(), Box<dyn Error>> {
     let file = File::create("tasks.json")?;
+    
     serde_json::to_writer(file, tasks.as_ref())?;
     Ok(())
 }
