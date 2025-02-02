@@ -24,6 +24,7 @@ struct AppState {
 }
 
 fn main() {
+    println!("Hello, Rust Learn Project!");
     let main_window = WindowDesc::new(build_ui)
         .title(LocalizedString::new("To-Do List"))
         .window_size((400.0, 400.0));
