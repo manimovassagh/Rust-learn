@@ -69,6 +69,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 Special thanks to the Rust community for their support and contributions.
 
-## Contact
-
-For any questions or inquiries, please contact [yourname@example.com](mailto:yourname@example.com).
