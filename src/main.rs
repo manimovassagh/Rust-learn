@@ -1,27 +1,14 @@
 use druid::{
-    AppLauncher, Color, Data, Env, Event, EventCtx, Lens, LocalizedString, RenderContext, Widget, WidgetExt, WindowDesc, 
+    AppLauncher, Color, Env, Event, EventCtx, LocalizedString, RenderContext, Widget, WidgetExt, WindowDesc, 
     widget::Controller
 };
 use druid::widget::{Button, Checkbox, Flex, Label, List, TextBox, Scroll, Painter};
-use serde::{Deserialize, Serialize};
-use std::error::Error;
-use std::fs::File;
 use std::sync::Arc;
-use rand::random;
+use crate::types::{Task, AppState};
+use crate::utils::{load_tasks, add_task, filtered_tasks_lens};
 
-#[derive(Clone, Data, Lens, Serialize, Deserialize, Debug)]
-struct Task {
-    id: u32,
-    description: String,
-    done: bool,
-}
-
-#[derive(Clone, Data, Lens)]
-struct AppState {
-    tasks: Arc<Vec<Task>>,
-    new_task_description: String,
-    show_completed: bool,
-}
+mod types;
+mod utils;
 
 fn main() {
     println!("Hello, Rust Learn Project!");
@@ -85,59 +72,6 @@ fn build_ui() -> impl Widget<AppState> {
         .with_flex_child(task_list, 1.0)
         .padding(10.0)
         .background(Color::rgb8(0xE0, 0xE0, 0xE0)) // Adjusted background color for better readability
-}
-
-fn add_task(data: &mut AppState) {
-    let description = data.new_task_description.trim();
-    if !description.is_empty() {
-        let mut new_tasks = Vec::clone(&data.tasks);
-        new_tasks.push(Task {
-            id: random(),
-            description: description.to_string(),
-            done: false,
-        });
-        data.tasks = Arc::new(new_tasks);
-        data.new_task_description.clear();
-        if let Err(e) = save_tasks(&data.tasks) {
-            eprintln!("Error saving tasks: {}", e);
-        }
-    }
-}
-
-fn filtered_tasks_lens() -> impl Lens<AppState, Arc<Vec<Task>>> {
-    druid::lens::Map::new(
-        |data: &AppState| {
-            if data.show_completed {
-                data.tasks.clone()
-            } else {
-                Arc::new(data.tasks.iter()
-                    .filter(|task| !task.done)
-                    .cloned()
-                    .collect())
-            }
-        },
-        |data: &mut AppState, filtered: Arc<Vec<Task>>| {
-            if data.show_completed {
-                data.tasks = filtered;
-            }
-        }
-    )
-}
-
-fn load_tasks() -> Result<Arc<Vec<Task>>, Box<dyn Error>> {
-    if std::path::Path::new("tasks.json").exists() {
-        let file = File::open("tasks.json")?;
-        let tasks: Vec<Task> = serde_json::from_reader(file)?;
-        Ok(Arc::new(tasks))
-    } else {
-        Ok(Arc::new(Vec::new()))
-    }
-}
-
-fn save_tasks(tasks: &Arc<Vec<Task>>) -> Result<(), Box<dyn Error>> {
-    let file = File::create("tasks.json")?;
-    serde_json::to_writer(file, tasks.as_ref())?;
-    Ok(())
 }
 
 struct EnterController;
