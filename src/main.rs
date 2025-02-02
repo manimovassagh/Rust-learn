@@ -17,7 +17,8 @@ fn main() {
         println!("What would you like to do?");
         println!("1. Add a new task");
         println!("2. List all tasks");
-        println!("3. Exit");
+        println!("3. Mark a task as done");
+        println!("4. Exit");
 
         let choice = get_input("Choose an option: ");
         match choice.trim() {
@@ -35,6 +36,18 @@ fn main() {
                 list_tasks(&tasks);
             }
             "3" => {
+                let task_id = get_input("Enter task ID to mark as done: ");
+                if let Ok(task_id) = task_id.parse::<u32>() {
+                    if mark_task_done(&mut tasks, task_id) {
+                        save_tasks(&tasks);
+                    } else {
+                        println!("Task with ID {} not found.", task_id);
+                    }
+                } else {
+                    println!("Invalid task ID.");
+                }
+            }
+            "4" => {
                 break;
             }
             _ => println!("Invalid choice, try again."),
@@ -77,4 +90,16 @@ fn list_tasks(tasks: &[Task]) {
             println!("ID: {}, Description: {}, Done: {}", task.id, task.description, task.done);
         }
     }
+}
+
+// Function to mark a task as done
+fn mark_task_done(tasks: &mut Vec<Task>, task_id: u32) -> bool {
+    for task in tasks.iter_mut() {
+        if task.id == task_id {
+            task.done = true;
+            println!("Task {} marked as done!", task.id);
+            return true;
+        }
+    }
+    false
 }
