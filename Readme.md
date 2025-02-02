@@ -1,6 +1,6 @@
-# Zig Learn Project
+# Rust Learn Project
 
-This project is a learning exercise for the Zig programming language, implemented in Rust.
+This project is a learning exercise for the Rust programming language.
 
 ## Getting Started
 
@@ -14,8 +14,8 @@ This project is a learning exercise for the Zig programming language, implemente
 Clone the repository:
 
 ```sh
-git clone https://github.com/yourusername/zig-learn.git
-cd zig-learn
+git clone https://github.com/yourusername/rust-learn.git
+cd rust-learn
 ```
 
 ### Building the Project
@@ -51,7 +51,7 @@ make clean
 When you run the project, you should see the following output:
 
 ```sh
-Hello, Zig Learn Project!
+Hello, Rust Learn Project!
 ```
 
 ## Contributing
