@@ -1,5 +1,5 @@
 use druid::{
-    AppLauncher, Data, Env, EventCtx, Lens, LensExt, LocalizedString, Widget, WidgetExt, WindowDesc
+    AppLauncher, Data, Env, EventCtx, Lens, LocalizedString, Widget, WidgetExt, WindowDesc
 };
 use druid::widget::{Button, Checkbox, Flex, Label, List, TextBox};
 use serde::{Deserialize, Serialize};
