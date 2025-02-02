@@ -1,105 +1,119 @@
-use serde::{Serialize, Deserialize};
+use druid::{
+    AppLauncher, Data, Env, EventCtx, Lens, LocalizedString, Widget, WidgetExt, WindowDesc
+};
+use druid::widget::{Button, Checkbox, Flex, Label, List, TextBox};
+use serde::{Deserialize, Serialize};
+use std::error::Error;
 use std::fs::File;
-use std::io::{self};
-use serde_json;
+use std::sync::Arc;
+use rand::random;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Data, Lens, Serialize, Deserialize, Debug)]
 struct Task {
     id: u32,
     description: String,
     done: bool,
 }
 
+#[derive(Clone, Data, Lens)]
+struct AppState {
+    tasks: Arc<Vec<Task>>,
+    new_task_description: String,
+    show_completed: bool,
+}
+
 fn main() {
-    let mut tasks: Vec<Task> = load_tasks().unwrap_or_else(|_| vec![]);
+    let main_window = WindowDesc::new(build_ui)
+        .title(LocalizedString::new("To-Do List"))
+        .window_size((400.0, 400.0));
 
-    loop {
-        println!("What would you like to do?");
-        println!("1. Add a new task");
-        println!("2. List all tasks");
-        println!("3. Mark a task as done");
-        println!("4. Exit");
+    let initial_state = AppState {
+        tasks: load_tasks().unwrap_or_else(|_| Arc::new(Vec::new())),
+        new_task_description: String::new(),
+        show_completed: true,
+    };
 
-        let choice = get_input("Choose an option: ");
-        match choice.trim() {
-            "1" => {
-                let description = get_input("Enter task description: ");
-                let new_task = Task {
-                    id: tasks.len() as u32 + 1,
-                    description,
+    AppLauncher::with_window(main_window)
+        .launch(initial_state)
+        .expect("Failed to launch application");
+}
+
+fn build_ui() -> impl Widget<AppState> {
+    let description_input = TextBox::new()
+        .lens(AppState::new_task_description);
+
+    let task_list = List::new(|| {
+        Flex::row()
+            .with_child(Checkbox::new("").lens(Task::done))
+            .with_child(Label::dynamic(|task: &Task, _env: &Env| {
+                format!("{}", task.description)
+            }))
+            .padding(5.0)
+    }).lens(AppState::tasks.then(filtered_tasks_lens()));
+
+    let add_task_button = Button::new("Add Task")
+        .on_click(|_ctx: &mut EventCtx, data: &mut AppState, _env: &Env| {
+            let description = data.new_task_description.trim();
+            if !description.is_empty() {
+                let mut new_tasks = Vec::clone(&data.tasks);
+                new_tasks.push(Task {
+                    id: random(),
+                    description: description.to_string(),
                     done: false,
-                };
-                tasks.push(new_task);
-                save_tasks(&tasks);
-            }
-            "2" => {
-                list_tasks(&tasks);
-            }
-            "3" => {
-                let task_id = get_input("Enter task ID to mark as done: ");
-                if let Ok(task_id) = task_id.parse::<u32>() {
-                    if mark_task_done(&mut tasks, task_id) {
-                        save_tasks(&tasks);
-                    } else {
-                        println!("Task with ID {} not found.", task_id);
-                    }
-                } else {
-                    println!("Invalid task ID.");
+                });
+                data.tasks = Arc::new(new_tasks);
+                data.new_task_description.clear();
+                if let Err(e) = save_tasks(&data.tasks) {
+                    eprintln!("Error saving tasks: {}", e);
                 }
             }
-            "4" => {
-                break;
+        });
+
+    let show_completed_checkbox = Checkbox::new("Show completed tasks")
+        .lens(AppState::show_completed);
+
+    Flex::column()
+        .with_child(description_input)
+        .with_child(add_task_button)
+        .with_child(show_completed_checkbox)
+        .with_spacer(10.0)
+        .with_child(task_list)
+}
+
+fn filtered_tasks_lens() -> impl Lens<Arc<Vec<Task>>, Arc<Vec<Task>>> {
+    AppState::show_completed.then(
+        druid::lens::Identity.map(
+            |show: &bool, tasks: &Arc<Vec<Task>>| {
+                if *show {
+                    tasks.clone()
+                } else {
+                    Arc::new(tasks.iter()
+                        .filter(|task| !task.done)
+                        .cloned()
+                        .collect())
+                }
+            },
+            |show: &mut bool, tasks: &mut Arc<Vec<Task>>, filtered| {
+                if *show {
+                    *tasks = filtered;
+                }
             }
-            _ => println!("Invalid choice, try again."),
-        }
-    }
+        )
+    )
 }
 
-// Function to get input from the user
-fn get_input(prompt: &str) -> String {
-    let mut input = String::new();
-    println!("{}", prompt);
-    io::stdin().read_line(&mut input).expect("Failed to read line");
-    input.trim().to_string()
-}
-
-// Function to save tasks to a JSON file
-fn save_tasks(tasks: &Vec<Task>) {
-    let file = File::create("tasks.json").expect("Failed to create file");
-    serde_json::to_writer(file, tasks).expect("Failed to write tasks to file");
-    println!("Tasks saved!");
-}
-
-// Function to load tasks from a JSON file
-fn load_tasks() -> Result<Vec<Task>, serde_json::Error> {
+fn load_tasks() -> Result<Arc<Vec<Task>>, Box<dyn Error>> {
     if std::path::Path::new("tasks.json").exists() {
-        let file = File::open("tasks.json").expect("Failed to open file");
+        let file = File::open("tasks.json")?;
         let tasks: Vec<Task> = serde_json::from_reader(file)?;
-        Ok(tasks)
+        Ok(Arc::new(tasks))
     } else {
-        Ok(vec![])
+        Ok(Arc::new(Vec::new()))
     }
 }
 
-// Function to list tasks
-fn list_tasks(tasks: &[Task]) {
-    if tasks.is_empty() {
-        println!("No tasks available.");
-    } else {
-        for task in tasks {
-            println!("ID: {}, Description: {}, Done: {}", task.id, task.description, task.done);
-        }
-    }
-}
-
-// Function to mark a task as done
-fn mark_task_done(tasks: &mut Vec<Task>, task_id: u32) -> bool {
-    for task in tasks.iter_mut() {
-        if task.id == task_id {
-            task.done = true;
-            println!("Task {} marked as done!", task.id);
-            return true;
-        }
-    }
-    false
+fn save_tasks(tasks: &Arc<Vec<Task>>) -> Result<(), Box<dyn Error>> {
+    let file = File::create("tasks.json")?;
+    serde_json::to_writer(file, tasks.as_ref())?;
+    Ok(())
 }
