@@ -1,54 +1,50 @@
 # Rust Learn Project
 
-This project is a learning exercise for the Rust programming language.
+Welcome to the Rust Learn Project! This project is a learning exercise for the Rust programming language, designed to help you get started with Rust and build a simple to-do list application.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Rust programming language
-- Cargo package manager
+Before you begin, ensure you have the following installed:
+
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
 
 ### Installation
 
-Clone the repository:
+1. Clone the repository:
 
-```sh
-git clone https://github.com/yourusername/rust-learn.git
-cd rust-learn
-```
+    ```sh
+    git clone https://github.com/yourusername/rust-learn.git
+    cd rust-learn
+    ```
 
-### Building the Project
+2. Build the project:
 
-To build the project, run:
+    ```sh
+    make build
+    ```
 
-```sh
-make build
-```
+3. Run the project:
 
-### Running the Project
+    ```sh
+    make run
+    ```
 
-To run the project, use:
+4. Clean the project:
 
-```sh
-make run
-```
-
-### Cleaning the Project
-
-To clean the project, execute:
-
-```sh
-make clean
-```
+    ```sh
+    make clean
+    ```
 
 ## Project Structure
 
-- `src/main.rs`: The main entry point of the application.
+- `src/main.rs`: The main entry point of the application, containing the GUI logic and task management.
 
 ## Example Output
 
-When you run the project, you should see the following output:
+When you run the project, you should see the following output in the terminal:
 
 ```sh
 Hello, Rust Learn Project!
@@ -56,8 +52,23 @@ Hello, Rust Learn Project!
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+We welcome contributions! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request. Follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add some feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Open a pull request.
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+Special thanks to the Rust community for their support and contributions.
+
+## Contact
+
+For any questions or inquiries, please contact [yourname@example.com](mailto:yourname@example.com).
